@@ -31,3 +31,7 @@
 - [ ] Rename todos
 - [ ] Check todos
 - [ ] See progress (done/total)
+
+### Info
+
+- [ ] Menu to see keybinds
