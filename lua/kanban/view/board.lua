@@ -42,9 +42,6 @@ function Board:_init(parent, data, config)
     x = x + width
   end
 
-  -- local tmp = Column(self, { name = '', card = {} }, config, { x = 0, y = 0, height = 4, width = 1 })
-  -- tmp:draw()
-
   self.columns = columns
 
   self.parent = parent

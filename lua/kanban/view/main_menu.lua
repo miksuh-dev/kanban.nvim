@@ -3,10 +3,10 @@ local Board = require('kanban.view.board')
 local store = require('kanban.store')
 local util = require('kanban.util')
 
-local Main = {}
-Main.__index = Main
+local Main_menu = {}
+Main_menu.__index = Main_menu
 
-setmetatable(Main, {
+setmetatable(Main_menu, {
   __call = function(cls, ...)
     local self = setmetatable({}, cls)
     self:_init(...)
@@ -14,27 +14,43 @@ setmetatable(Main, {
   end,
 })
 
-function Main:_init(data, config)
-  local board_width = vim.api.nvim_list_uis()[1].width
-  local board_height = vim.api.nvim_list_uis()[1].height
+function Main_menu:_init(parent, data, config, dimension)
+  local popup_options = self:create_popup_options(data, config, dimension)
+  local lines = self:create_lines(data, config)
+  local menu = self:create_menu(popup_options, lines)
 
-  local width = math.floor(board_width * 0.66)
-  local height = math.floor(board_height * 0.66)
+  self.data = data
+  self.config = config
+  self.dimension = dimension
+  self.menu = menu
 
-  local popup_options = {
+  return self
+end
+
+function Main_menu:create_lines(data, config)
+  local lines = {}
+  for _, board in ipairs(data.board) do
+    table.insert(lines, Menu.item({ id = tostring(board.id), text = board.name }))
+  end
+
+  return lines
+end
+
+function Main_menu:create_popup_options(data, config, dimension)
+  return {
     relative = 'editor',
     size = {
-      width = width,
-      height = height,
+      width = dimension.width,
+      height = dimension.height,
     },
     position = {
-      col = math.floor(board_width / 2 - width / 2),
-      row = math.floor(board_height / 2 - height / 2),
+      col = math.floor(dimension.board_width / 2 - dimension.width / 2),
+      row = math.floor(dimension.board_height / 2 - dimension.height / 2),
     },
     border = {
       style = 'rounded',
       text = {
-        top = config.main.title,
+        top = ' ' .. config.main.title .. ' ',
         top_align = 'center',
       },
     },
@@ -42,13 +58,10 @@ function Main:_init(data, config)
       winhighlight = 'Normal:Normal',
     },
   }
+end
 
-  local lines = {}
-  for _, board in ipairs(data.board) do
-    table.insert(lines, Menu.item({ id = tostring(board.id), text = board.name }))
-  end
-
-  local menu = Menu(popup_options, {
+function Main_menu:create_menu(popup_options, lines)
+  return Menu(popup_options, {
     lines = lines,
     max_width = 20,
     keymap = {
@@ -68,15 +81,9 @@ function Main:_init(data, config)
       self.active_item = active_item
     end,
   })
-
-  self.data = data
-  self.config = config
-  self.menu = menu
-
-  return self
 end
 
-function Main:get_board_data(board_id)
+function Main_menu:get_board_data(board_id)
   for index, board in ipairs(self.data.board) do
     if board_id == board.id then
       return index, board
@@ -85,7 +92,7 @@ function Main:get_board_data(board_id)
   return nil
 end
 
-function Main:get_active_board_data()
+function Main_menu:get_active_board_data()
   if self.active_item then
     local index, card = self:get_board_data(self.active_item.id)
     return index, card
@@ -94,7 +101,7 @@ function Main:get_active_board_data()
   return nil
 end
 
-function Main:update_data(updated_data)
+function Main_menu:update_data(updated_data)
   -- In main
   if updated_data.board then
     store.save_data(self.data, self.config)
@@ -114,18 +121,28 @@ function Main:update_data(updated_data)
   end
 end
 
-function Main:create_board(name, position)
+function Main_menu:create_board(name, position)
   if name == '' then
     print('Empty board name not allowed!')
     return
   end
 
   local new_board = {
-    id = self:generate_board_id(),
+    id = self:generate_id('board'),
     name = name,
     description = '',
     created_at = os.date('%Y-%m-%d %H:%M:%S'),
-    column = {},
+    column = {
+      {
+        id = self:generate_id('column'),
+        name = 'Column 1',
+        position = nil,
+        description = '',
+        modified = '',
+        created_at = os.date('%Y-%m-%d %H:%M:%S'),
+        card = {},
+      },
+    },
   }
 
   table.insert(self.data.board, position, new_board)
@@ -135,15 +152,30 @@ function Main:create_board(name, position)
     error('Failed to update data')
     return
   end
+
+  local lines = self:create_lines(self.data, self.config)
+  local popup_options = self:create_popup_options(self.data, self.config, self.dimension)
+  local menu = self:create_menu(popup_options, lines)
+
+  if self.menu then
+    self.menu:unmount()
+  end
+
+  self.menu = menu
+
+  self:draw()
+
+  vim.api.nvim_win_set_cursor(self.menu.winid, { position, 0 })
+  self.menu._.on_change(self.menu._tree:get_node(position))
 end
 
-function Main:load_board(data)
+function Main_menu:load_board(data)
   local board = Board(self, data, self.config)
 
   return board
 end
 
-function Main:set_active_board(board_id)
+function Main_menu:set_active_board(board_id)
   local _, board_data = self:get_board_data(board_id)
 
   if board_data then
@@ -154,11 +186,7 @@ function Main:set_active_board(board_id)
   end
 end
 
-function Main:generate_board_id()
-  return self:generate_id('board')
-end
-
-function Main:generate_id(type)
+function Main_menu:generate_id(type)
   if type == 'board' then
     return util.generate_board_id(self.data)
   end
@@ -172,10 +200,25 @@ function Main:generate_id(type)
   end
 end
 
-function Main:draw()
+function Main_menu:draw()
   self.menu:mount()
 
-  self.menu:map('n', 'a', function()
+  self.menu:map('n', 'O', function()
+    vim.ui.input('New board title: ', function(name)
+      if not name then
+        return
+      end
+
+      local active_board_index = self:get_active_board_data()
+      local new_board_position = active_board_index and active_board_index or 0
+
+      self:create_board(name, new_board_position)
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', 'o', function()
     vim.ui.input('New board title: ', function(name)
       if not name then
         return
@@ -191,4 +234,4 @@ function Main:draw()
   }, true)
 end
 
-return Main
+return Main_menu

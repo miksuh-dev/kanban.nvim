@@ -2,7 +2,7 @@
 
 ### Board
 
-- [ ] Add board
+- [x] Add board
 - [ ] Remove board
 - [ ] Move board
 - [ ] Rename board
