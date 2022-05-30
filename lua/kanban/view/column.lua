@@ -386,7 +386,24 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'a', function()
+  -- Add above
+  self.menu:map('n', 'O', function()
+    vim.ui.input('New card title: ', function(name)
+      if not name then
+        return
+      end
+
+      local active_card_index = self:get_active_card_data()
+      local new_card_position = active_card_index and active_card_index or 0
+
+      self:create_card(name, new_card_position)
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
+  -- Add under
+  self.menu:map('n', 'o', function()
     vim.ui.input('New card title: ', function(name)
       if not name then
         return
