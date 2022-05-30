@@ -8,6 +8,7 @@ M.table_clone = function(t)
   return t2
 end
 
+-- TODO Theres gotta be some better way to do these ":D"
 M.generate_board_id = function(data)
   local max = 0
 
