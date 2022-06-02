@@ -10,7 +10,7 @@ return {
   },
   keymap = {
     select = '<CR>',
-    delete = 'x',
+    remove = 'x',
     create_below = 'o',
     create_above = 'O',
     move_up = 'k',

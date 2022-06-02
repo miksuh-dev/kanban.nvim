@@ -418,7 +418,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.delete, function()
+  self.menu:map('n', self.config.keymap.remove, function()
     vim.ui.input('Delete card (y/n): ', function(answer)
       if answer ~= 'y' then
         return
