@@ -101,6 +101,26 @@ function Main_menu:get_active_board_data()
   return nil
 end
 
+function Main_menu:get_previous_board(board_id)
+  local index, _ = self:get_board_data(board_id)
+  local previous_board = self.data.board[index - 1]
+
+  if previous_board then
+    local previous_board_index = index - 1
+    return previous_board_index, previous_board
+  end
+end
+
+function Main_menu:get_next_board(board_id)
+  local index, _ = self:get_board_data(board_id)
+  local next_board = self.data.board[index + 1]
+
+  if next_board then
+    local next_board_index = index + 1
+    return next_board_index, next_board
+  end
+end
+
 function Main_menu:update_data(updated_data)
   -- In main
   if updated_data.board then
@@ -229,6 +249,82 @@ end
 
 function Main_menu:draw()
   self.menu:mount()
+
+  self.menu:map('n', self.config.keymap.move_item_up, function()
+    local active_board_index, active_board = self:get_active_board_data()
+    if not active_board then
+      return
+    end
+    local previous_board_index, previous_board = self:get_previous_board(self.active_item.id)
+
+    if previous_board_index then
+      local active_board_copy = util.table_clone(active_board)
+      local previous_board_copy = util.table_clone(previous_board)
+
+      self.data.board[active_board_index] = previous_board_copy
+      self.data.board[previous_board_index] = active_board_copy
+
+      local success = self:update_data(self.data)
+      if not success then
+        error('Failed to update data')
+        return
+      end
+
+      local lines = self:create_lines(self.data, self.config)
+      local popup_options = self:create_popup_options(self.data, self.config, self.dimension)
+      local menu = self:create_menu(popup_options, lines)
+
+      if self.menu then
+        self.menu:unmount()
+      end
+
+      self.menu = menu
+
+      self:draw()
+
+      vim.api.nvim_win_set_cursor(self.menu.winid, { previous_board_index, 0 })
+      self.menu._.on_change(self.menu._tree:get_node(previous_board_index))
+    end
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', self.config.keymap.move_item_down, function()
+    local active_board_index, active_board = self:get_active_board_data()
+
+    local next_board_index, next_board = self:get_next_board(self.active_item.id)
+
+    if next_board_index then
+      local active_board_copy = util.table_clone(active_board)
+      local next_board_copy = util.table_clone(next_board)
+
+      self.data.board[active_board_index] = next_board_copy
+      self.data.board[next_board_index] = active_board_copy
+
+      local success = self:update_data(self.data)
+      if not success then
+        error('Failed to update data')
+        return
+      end
+
+      local lines = self:create_lines(self.data, self.config)
+      local popup_options = self:create_popup_options(self.data, self.config, self.dimension)
+      local menu = self:create_menu(popup_options, lines)
+
+      if self.menu then
+        self.menu:unmount()
+      end
+
+      self.menu = menu
+
+      self:draw()
+
+      vim.api.nvim_win_set_cursor(self.menu.winid, { next_board_index, 0 })
+      self.menu._.on_change(self.menu._tree:get_node(next_board_index))
+    end
+  end, {
+    noremap = true,
+  }, true)
 
   self.menu:map('n', self.config.keymap.create_above, function()
     vim.ui.input('New board title: ', function(name)

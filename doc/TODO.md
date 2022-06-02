@@ -4,7 +4,7 @@
 
 - [x] Add board
 - [x] Remove board
-- [ ] Move board
+- [x] Move board
 - [ ] Rename board
 - [x] View board
 
