@@ -256,7 +256,7 @@ function Column:draw()
 
   self.bufnr = self.menu._tree.bufnr
 
-  self.menu:map('n', 'h', function()
+  self.menu:map('n', self.config.keymap.move_left, function()
     local previous_column = self.parent.get_previous_column(self.parent, self.data.id)
     if previous_column then
       local active_card_index = self:get_active_card_data()
@@ -282,7 +282,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'l', function()
+  self.menu:map('n', self.config.keymap.move_right, function()
     local next_column = self.parent.get_next_column(self.parent, self.data.id)
     if next_column then
       local active_card_index = self:get_active_card_data()
@@ -308,7 +308,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'K', function()
+  self.menu:map('n', self.config.keymap.move_item_up, function()
     local active_card_index, active_card = self:get_active_card_data()
     if not active_card then
       return
@@ -348,7 +348,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'J', function()
+  self.menu:map('n', self.config.keymap.move_item_down, function()
     local active_card_index, active_card = self:get_active_card_data()
 
     local next_card_index, next_card = self:get_next_card(self.active_item.id)
@@ -387,7 +387,7 @@ function Column:draw()
   }, true)
 
   -- Add above
-  self.menu:map('n', 'O', function()
+  self.menu:map('n', self.config.keymap.create_above, function()
     vim.ui.input('New card title: ', function(name)
       if not name then
         return
@@ -403,7 +403,7 @@ function Column:draw()
   }, true)
 
   -- Add under
-  self.menu:map('n', 'o', function()
+  self.menu:map('n', self.config.keymap.create_below, function()
     vim.ui.input('New card title: ', function(name)
       if not name then
         return
@@ -418,7 +418,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'x', function()
+  self.menu:map('n', self.config.keymap.delete, function()
     vim.ui.input('Delete card (y/n): ', function(answer)
       if answer ~= 'y' then
         return
@@ -435,7 +435,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', '<enter>', function()
+  self.menu:map('n', self.config.keymap.select, function()
     P(self.active_item.text)
   end, {
     noremap = true,

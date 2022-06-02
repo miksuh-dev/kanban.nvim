@@ -203,7 +203,7 @@ end
 function Main_menu:draw()
   self.menu:mount()
 
-  self.menu:map('n', 'O', function()
+  self.menu:map('n', self.config.keymap.create_above, function()
     vim.ui.input('New board title: ', function(name)
       if not name then
         return
@@ -218,7 +218,7 @@ function Main_menu:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', 'o', function()
+  self.menu:map('n', self.config.keymap.create_below, function()
     vim.ui.input('New board title: ', function(name)
       if not name then
         return
