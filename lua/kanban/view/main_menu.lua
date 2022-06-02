@@ -19,6 +19,7 @@ function Main_menu:_init(parent, data, config, dimension)
   local lines = self:create_lines(data, config)
   local menu = self:create_menu(popup_options, lines)
 
+  self.parent = parent
   self.data = data
   self.config = config
   self.dimension = dimension

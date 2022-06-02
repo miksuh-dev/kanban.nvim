@@ -19,7 +19,7 @@
 - [x] Add new card
 - [x] Remove card
 - [x] Move card (up/down)
-- [ ] Move a card from one column to another
+- [x] Move a card from one column to another
 - [ ] Inspect card (title and description)
 - [ ] Rename card
 

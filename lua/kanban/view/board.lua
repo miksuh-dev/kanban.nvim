@@ -114,14 +114,6 @@ function Board:should_close_column()
   return true
 end
 
-function Board:on_card_change(column_data, active_item)
-  for _, column in pairs(self.columns) do
-    if column_data.id ~= column.id then
-      column.set_active_row(column, active_item.index)
-    end
-  end
-end
-
 function Board:on_column_close(index)
   self:close_all()
 end
