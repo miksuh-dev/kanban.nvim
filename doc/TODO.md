@@ -3,7 +3,7 @@
 ### Board
 
 - [x] Add board
-- [ ] Remove board
+- [x] Remove board
 - [ ] Move board
 - [ ] Rename board
 - [x] View board

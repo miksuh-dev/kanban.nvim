@@ -169,6 +169,33 @@ function Main_menu:create_board(name, position)
   self.menu._.on_change(self.menu._tree:get_node(position))
 end
 
+function Main_menu:remove_board(index)
+  table.remove(self.data.board, index)
+
+  local success = self:update_data(self.data)
+  if not success then
+    error('Failed to update data')
+    return
+  end
+
+  local lines = self:create_lines(self.data, self.config)
+  local popup_options = self:create_popup_options(self.data, self.config, self.dimension)
+  local menu = self:create_menu(popup_options, lines)
+
+  if self.menu then
+    self.menu:unmount()
+  end
+
+  self.menu = menu
+
+  self:draw()
+
+  local new_index = self.data.board[index] and index or index - 1
+
+  vim.api.nvim_win_set_cursor(self.menu.winid, { new_index, 0 })
+  self.menu._.on_change(self.menu._tree:get_node(new_index))
+end
+
 function Main_menu:load_board(data)
   local board = Board(self, data, self.config)
 
@@ -228,6 +255,23 @@ function Main_menu:draw()
       local new_board_position = active_board_index and active_board_index or 0
 
       self:create_board(name, new_board_position + 1)
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', self.config.keymap.remove, function()
+    vim.ui.input('Remove board (y/n): ', function(answer)
+      if answer ~= 'y' then
+        return
+      end
+
+      local active_board_index = self:get_active_board_data()
+      if not active_board_index then
+        return
+      end
+
+      self:remove_board(active_board_index)
     end)
   end, {
     noremap = true,
