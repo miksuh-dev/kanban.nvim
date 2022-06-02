@@ -52,7 +52,9 @@ function Column:create_popup_options(data, dimension, selected)
       },
     },
     win_options = {
-      winhighlight = selected and 'Normal:Normal,FloatBorder:SpecialChar' or 'Normal:Normal,FloatBorder:Normal',
+      -- TODO Move these to config and create new higlight groups specificly for these
+      winhighlight = selected and 'Normal:Normal,FloatBorder:SpecialChar,CursorLine:CursorLine'
+        or 'Normal:Normal,FloatBorder:Normal,CursorLine:NONE',
     },
   }
 end
@@ -109,10 +111,10 @@ function Column:set_active(position)
 
   local card_count = #self.data.card
 
-  position = position or 1
+  position = position or 0
   local card_index = position > card_count and card_count or position
 
-  if card_index then
+  if card_index > 0 then
     vim.api.nvim_win_set_cursor(self.menu.winid, { card_index, 0 })
     self.menu._.on_change(self.menu._tree:get_node(card_index))
   end
@@ -415,10 +417,17 @@ function Column:draw()
         return
       end
 
+      local new_card = {
+        id = self:generate_card_id(),
+        name = name,
+        description = '',
+        created_at = os.date('%Y-%m-%d %H:%M:%S'),
+      }
+
       local active_card_index = self:get_active_card_data()
       local new_card_position = active_card_index and active_card_index or 0
 
-      self:create_card(name, new_card_position)
+      self:create_card(new_card, new_card_position)
     end)
   end, {
     noremap = true,
@@ -482,6 +491,11 @@ function Column:draw()
   end, {
     once = true,
   })
+
+  -- if initial_index then
+  --   vim.api.nvim_win_set_cursor(self.menu.winid, { initial_index, 0 })
+  --   self.menu._.on_change(self.menu._tree:get_node(initial_index))
+  -- end
 end
 
 function Column:unmount()
