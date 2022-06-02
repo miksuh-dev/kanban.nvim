@@ -419,7 +419,7 @@ function Column:draw()
   }, true)
 
   self.menu:map('n', self.config.keymap.remove, function()
-    vim.ui.input('Delete card (y/n): ', function(answer)
+    vim.ui.input('Remove card (y/n): ', function(answer)
       if answer ~= 'y' then
         return
       end
