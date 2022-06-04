@@ -10,9 +10,10 @@
 
 #### Columns:
 
-- [ ] Add new column
-- [ ] Remove existing column
+- [x] Add new column
+- [x] Remove existing column
 - [ ] Rename column
+- [ ] Make movement between columns more vim like (keeping selected index even though other column doesns't have as many cards)
 
 #### Cards
 

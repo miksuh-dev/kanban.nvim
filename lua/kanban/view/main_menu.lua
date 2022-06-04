@@ -357,7 +357,7 @@ function Main_menu:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.remove, function()
+  self.menu:map('n', self.config.keymap.remove_item, function()
     vim.ui.input('Remove board (y/n): ', function(answer)
       if answer ~= 'y' then
         return

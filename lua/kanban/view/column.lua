@@ -172,6 +172,10 @@ function Column:generate_card_id()
   return self.parent.parent.generate_id(self.parent.parent, 'card')
 end
 
+function Column:generate_column_id()
+  return self.parent.parent.generate_id(self.parent.parent, 'column')
+end
+
 function Column:create_card(card, position)
   if card.name == '' then
     print('Empty card name not allowed!')
@@ -201,6 +205,24 @@ function Column:create_card(card, position)
 
   self:draw()
   self:set_active(card_index)
+end
+
+function Column:create_column(position)
+  vim.ui.input('New column title: ', function(name)
+    if not name then
+      return
+    end
+
+    local new_column = {
+      id = self:generate_column_id(),
+      name = name,
+      description = '',
+      created_at = os.date('%Y-%m-%d %H:%M:%S'),
+      card = {},
+    }
+
+    self.parent.create_column(self.parent, new_column, position)
+  end)
 end
 
 function Column:remove_card(index)
@@ -410,7 +432,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  -- Add above
+  -- Add above (ccard)
   self.menu:map('n', self.config.keymap.create_above, function()
     vim.ui.input('New card title: ', function(name)
       if not name then
@@ -433,7 +455,24 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  -- Add under
+  -- Add right (column)
+  self.menu:map('n', self.config.keymap.create_right, function()
+    local active_board_index, _ = self.parent.get_column_data(self.parent, self.data.id)
+    local new_board_index = active_board_index and active_board_index or 0
+
+    self:create_column(new_board_index + 1)
+  end, {
+    noremap = true,
+  }, true)
+
+  -- Add last (column)
+  self.menu:map('n', self.config.keymap.create_right_first, function()
+    self:create_column(#self.parent.data.column + 1)
+  end, {
+    noremap = true,
+  }, true)
+
+  -- Add under (card)
   self.menu:map('n', self.config.keymap.create_below, function()
     vim.ui.input('New card title: ', function(name)
       if not name then
@@ -456,14 +495,31 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.remove, function()
-    vim.ui.input('Remove card (y/n): ', function(answer)
-      if answer ~= 'y' then
-        return
-      end
+  -- Add left (column)
+  self.menu:map('n', self.config.keymap.create_left, function()
+    local active_board_index, _ = self.parent.get_column_data(self.parent, self.data.id)
+    local new_board_index = active_board_index and active_board_index or 0
 
-      local active_card_index = self:get_active_card_data()
-      if not active_card_index then
+    self:create_column(new_board_index)
+  end, {
+    noremap = true,
+  }, true)
+
+  -- Add first (column)
+  self.menu:map('n', self.config.keymap.create_left_first, function()
+    self:create_column(1)
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', self.config.keymap.remove_item, function()
+    local active_card_index, active_card = self:get_active_card_data()
+    if not active_card_index then
+      return
+    end
+
+    vim.ui.input("Remove card '" .. active_card.name .. "' (y/n): ", function(answer)
+      if answer ~= 'y' then
         return
       end
 
@@ -473,6 +529,29 @@ function Column:draw()
 
       vim.api.nvim_win_set_cursor(self.menu.winid, { new_index, 0 })
       self.menu._.on_change(self.menu._tree:get_node(new_index))
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', self.config.keymap.remove_container, function()
+    local active_board_index, active_board = self.parent.get_column_data(self.parent, self.data.id)
+    if not active_board_index then
+      return
+    end
+
+    -- Prevent deleting last column
+    if #self.parent.data.column == 1 then
+      print('You cannot delete last column.')
+      return
+    end
+
+    vim.ui.input("Remove board '" .. active_board.name .. "' (y/n): ", function(answer)
+      if answer ~= 'y' then
+        return
+      end
+
+      self.parent.remove_column(self.parent, active_board_index)
     end)
   end, {
     noremap = true,

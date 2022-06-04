@@ -12,46 +12,56 @@ setmetatable(Board, {
 })
 
 function Board:_init(parent, data, config)
-  local num_columns = vim.fn.len(data.column)
   local active_column_index = 1
 
   local board_width = vim.api.nvim_list_uis()[1].width
   local board_height = vim.api.nvim_list_uis()[1].height
 
-  local width = math.floor(board_width / num_columns)
-  local height = board_height
+  local dimension = {
+    board_width = board_width,
+    board_height = board_height,
+  }
 
-  local columns = {}
-  local remainder = board_width % num_columns
-  local x = 0
-
-  for i, column_data in ipairs(data.column) do
-    local column_width = width
-    if i == num_columns then
-      column_width = width + remainder
-    end
-
-    local dimension = {
-      x = x,
-      y = 0,
-      width = column_width - 2,
-      height = height - 3,
-    }
-
-    table.insert(columns, Column(self, column_data, config, dimension))
-    x = x + width
-  end
-
-  self.columns = columns
+  self.columns = self:create_renderable_columns(data, config, dimension)
 
   self.parent = parent
   self.data = data
   self.config = config
+  self.dimension = dimension
 
-  self.num_columns = num_columns
   self.active_column_index = active_column_index
 
   return self
+end
+
+function Board:create_renderable_columns(data, config, dimension)
+  local num_columns = vim.fn.len(data.column)
+
+  local initial_column_width = math.floor(dimension.board_width / num_columns)
+  local initial_column_height = dimension.board_height
+
+  local columns = {}
+  local remainder = dimension.board_width % num_columns
+  local x = 0
+
+  for i, column_data in ipairs(data.column) do
+    local column_width = initial_column_width
+    if i == num_columns then
+      column_width = initial_column_width + remainder
+    end
+
+    local column_dimension = {
+      x = x,
+      y = 0,
+      width = column_width - 2,
+      height = initial_column_height - 3,
+    }
+
+    table.insert(columns, Column(self, column_data, config, column_dimension))
+    x = x + initial_column_width
+  end
+
+  return columns
 end
 
 function Board:get_column_data(column_id)
@@ -102,6 +112,54 @@ function Board:update_data(updated_column_data)
   end
 end
 
+function Board:create_column(column, position)
+  if column.name == '' then
+    print('Empty column name not allowed!')
+    return
+  end
+
+  local column_count = #self.data.column
+  local column_index = position > column_count and column_count + 1 or position
+
+  table.insert(self.data.column, column_index, column)
+
+  local success = self.parent.update_data(self.parent, self.data)
+  if not success then
+    error('Failed to update data')
+    return
+  end
+
+  if self.columns then
+    self:close_all()
+  end
+
+  self.columns = self:create_renderable_columns(self.data, self.config, self.dimension)
+
+  self.active_column_index = position
+
+  self:draw()
+end
+
+function Board:remove_column(index)
+  table.remove(self.data.column, index)
+
+  local success = self.parent.update_data(self.parent, self.data)
+  if not success then
+    error('Failed to update data')
+    return
+  end
+
+  if self.columns then
+    self:close_all()
+  end
+
+  self.columns = self:create_renderable_columns(self.data, self.config, self.dimension)
+
+  local num_columns = #self.data.column
+  self.active_column_index = index > num_columns and num_columns or index
+  self:draw()
+end
+
 function Board:should_close_column()
   local current_bufnr = vim.api.nvim_get_current_buf()
 
@@ -122,10 +180,12 @@ function Board:close_all()
   for _, column in pairs(self.columns) do
     column:unmount()
   end
+
+  self.columns = {}
 end
 
 function Board:draw()
-  for i, column in pairs(self.columns) do
+  for _, column in pairs(self.columns) do
     column:draw()
   end
 

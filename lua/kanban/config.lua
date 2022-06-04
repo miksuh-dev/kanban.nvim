@@ -10,7 +10,12 @@ return {
   },
   keymap = {
     select = '<CR>',
-    remove = 'x',
+    remove_item = 'x',
+    remove_container = 'X',
+    create_left = 'i',
+    create_right = 'a',
+    create_left_first = 'I',
+    create_right_first = 'A',
     create_below = 'o',
     create_above = 'O',
     move_up = 'k',
