@@ -581,13 +581,13 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.edit_column, function()
-    local active_board_index, active_board = self.parent.get_column_data(self.parent, self.data.id)
-    if not active_board_index then
+  self.menu:map('n', self.config.keymap.edit_name, function()
+    local active_column_index, active_column = self.parent.get_column_data(self.parent, self.data.id)
+    if not active_column_index then
       return
     end
 
-    vim.ui.input({ prompt = 'Insert new column name: ', default = active_board.name }, function(answer)
+    vim.ui.input({ prompt = 'Insert new column name: ', default = active_column.name }, function(answer)
       if answer == '' then
         print('Empty column name not allowed!')
         return

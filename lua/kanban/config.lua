@@ -26,6 +26,6 @@ return {
     move_item_down = 'J',
     move_item_left = 'H',
     move_item_right = 'L',
-    edit_column = 'e',
+    edit_name = 'e',
   },
 }

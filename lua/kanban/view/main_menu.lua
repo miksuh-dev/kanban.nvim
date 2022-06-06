@@ -357,6 +357,42 @@ function Main_menu:draw()
     noremap = true,
   }, true)
 
+  self.menu:map('n', self.config.keymap.edit_name, function()
+    local active_board_index, active_board = self:get_active_board_data()
+    if not active_board_index then
+      return
+    end
+
+    vim.ui.input({ prompt = 'Insert new board name: ', default = active_board.name }, function(answer)
+      if answer == '' then
+        print('Empty board name not allowed!')
+        return
+      end
+
+      self.data.board[active_board_index].name = answer
+
+      local success = self:update_data(self.data)
+      if not success then
+        error('Failed to update data')
+        return
+      end
+
+      local lines = self:create_lines(self.data, self.config)
+      local popup_options = self:create_popup_options(self.data, self.config, self.dimension)
+      local menu = self:create_menu(popup_options, lines)
+
+      if self.menu then
+        self.menu:unmount()
+      end
+
+      self.menu = menu
+
+      self:draw()
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
   self.menu:map('n', self.config.keymap.remove_item, function()
     vim.ui.input('Remove board (y/n): ', function(answer)
       if answer ~= 'y' then

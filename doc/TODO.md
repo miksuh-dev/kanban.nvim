@@ -5,7 +5,7 @@
 - [x] Add board
 - [x] Remove board
 - [x] Move board
-- [ ] Rename board
+- [x] Rename board
 - [x] View board
 
 #### Columns:
