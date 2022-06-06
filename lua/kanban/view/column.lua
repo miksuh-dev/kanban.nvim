@@ -558,7 +558,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.remove_container, function()
+  self.menu:map('n', self.config.keymap.remove_column, function()
     local active_board_index, active_board = self.parent.get_column_data(self.parent, self.data.id)
     if not active_board_index then
       return
@@ -576,6 +576,44 @@ function Column:draw()
       end
 
       self.parent.remove_column(self.parent, active_board_index)
+    end)
+  end, {
+    noremap = true,
+  }, true)
+
+  self.menu:map('n', self.config.keymap.edit_column, function()
+    local active_board_index, active_board = self.parent.get_column_data(self.parent, self.data.id)
+    if not active_board_index then
+      return
+    end
+
+    vim.ui.input({ prompt = 'Insert new column name: ', default = active_board.name }, function(answer)
+      if answer == '' then
+        print('Empty column name not allowed!')
+        return
+      end
+
+      local active_card_index, _ = self:get_active_card_data()
+
+      self.data.name = answer
+      local success = self.parent.update_data(self.parent, self.data)
+      if not success then
+        error('Failed to update data')
+        return
+      end
+
+      local lines = self:create_lines(self.data, self.config)
+      local popup_options = self:create_popup_options(self.data, self.dimension, true)
+      local menu = self:create_menu(popup_options, lines)
+
+      if self.menu then
+        self.menu:unmount()
+      end
+
+      self.menu = menu
+
+      self:draw()
+      self:set_active(active_card_index)
     end)
   end, {
     noremap = true,

@@ -11,7 +11,7 @@ return {
   keymap = {
     select = '<CR>',
     remove_item = 'x',
-    remove_container = 'X',
+    remove_column = 'X',
     swap_column_left = '<c-h>',
     swap_column_right = '<c-l>',
     create_left = 'i',
@@ -26,5 +26,6 @@ return {
     move_item_down = 'J',
     move_item_left = 'H',
     move_item_right = 'L',
+    edit_column = 'e',
   },
 }
