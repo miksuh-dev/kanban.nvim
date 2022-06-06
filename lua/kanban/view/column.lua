@@ -253,7 +253,7 @@ function Column:draw()
 
   self.bufnr = self.menu._tree.bufnr
 
-  self.menu:map('n', self.config.keymap.move_left, function()
+  self.menu:map('n', self.config.keymap.go_left, function()
     local previous_column = self.parent.get_previous_column(self.parent, self.data.id)
     if previous_column then
       local active_card_index, _ = self:get_active_card_data()
@@ -275,7 +275,7 @@ function Column:draw()
     noremap = true,
   }, true)
 
-  self.menu:map('n', self.config.keymap.move_right, function()
+  self.menu:map('n', self.config.keymap.go_right, function()
     local next_column = self.parent.get_next_column(self.parent, self.data.id)
     if next_column then
       local active_card_index, _ = self:get_active_card_data()
@@ -465,8 +465,20 @@ function Column:draw()
     noremap = true,
   }, true)
 
+  -- Swap column right (column)
+  self.menu:map('n', self.config.keymap.swap_column_right, function()
+    local target_column = self.parent.get_next_column(self.parent, self.data.id)
+    if not target_column then
+      return
+    end
+
+    self.parent.swap_column(self.parent, self, target_column)
+  end, {
+    noremap = true,
+  }, true)
+
   -- Add last (column)
-  self.menu:map('n', self.config.keymap.create_right_first, function()
+  self.menu:map('n', self.config.keymap.create_right_last, function()
     self:create_column(#self.parent.data.column + 1)
   end, {
     noremap = true,
@@ -501,6 +513,18 @@ function Column:draw()
     local new_board_index = active_board_index and active_board_index or 0
 
     self:create_column(new_board_index)
+  end, {
+    noremap = true,
+  }, true)
+
+  -- Swap column left (column)
+  self.menu:map('n', self.config.keymap.swap_column_left, function()
+    local target_column = self.parent.get_previous_column(self.parent, self.data.id)
+    if not target_column then
+      return
+    end
+
+    self.parent.swap_column(self.parent, self, target_column)
   end, {
     noremap = true,
   }, true)
@@ -570,11 +594,6 @@ function Column:draw()
   end, {
     once = true,
   })
-
-  -- if initial_index then
-  --   vim.api.nvim_win_set_cursor(self.menu.winid, { initial_index, 0 })
-  --   self.menu._.on_change(self.menu._tree:get_node(initial_index))
-  -- end
 end
 
 function Column:unmount()

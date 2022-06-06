@@ -140,6 +140,30 @@ function Board:create_column(column, position)
   self:draw()
 end
 
+function Board:swap_column(current_column, target_column)
+  local column_index, _ = self:get_column_data(current_column.data.id)
+  local target_column_index, _ = self:get_column_data(target_column.data.id)
+
+  table.remove(self.data.column, column_index)
+  table.insert(self.data.column, target_column_index, current_column.data)
+
+  local success = self.parent.update_data(self.parent, self.data)
+  if not success then
+    error('Failed to update data')
+    return
+  end
+
+  if self.columns then
+    self:close_all()
+  end
+
+  self.columns = self:create_renderable_columns(self.data, self.config, self.dimension)
+
+  local num_columns = #self.data.column
+  self.active_column_index = target_column_index > num_columns and num_columns or target_column_index
+  self:draw()
+end
+
 function Board:remove_column(index)
   table.remove(self.data.column, index)
 

@@ -13,7 +13,7 @@
 - [x] Add new column
 - [x] Remove existing column
 - [ ] Rename column
-- [ ] Swap column position
+- [x] Swap column position
 - [ ] Make movement between columns more vim like (keeping selected index even though other column doesns't have as many cards)
 
 #### Cards
