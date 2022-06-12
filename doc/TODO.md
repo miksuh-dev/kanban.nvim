@@ -24,6 +24,7 @@
 - [x] Move a card from one column to another
 - [ ] Inspect card (title and description)
 - [ ] Rename card
+- [ ] Fix crash when trying to change card on empty menu
 
 #### TODO
 

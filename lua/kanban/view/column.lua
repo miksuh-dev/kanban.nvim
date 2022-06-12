@@ -366,6 +366,9 @@ function Column:draw()
 
   self.menu:map('n', self.config.keymap.move_item_down, function()
     local active_card_index, active_card = self:get_active_card_data()
+    if not active_card_index then
+      return
+    end
 
     local next_card_index, next_card = self:get_next_card(self.active_item.id)
 
