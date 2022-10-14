@@ -1,7 +1,15 @@
-# kanban.nvim
+# kanban.nvim (wip)
 
-Use kanban inside Neovim
+Use kanban inside Neovim. Missing some core features still [see](./doc/TODO.md).
 
-## TODO
+## Installation
 
-See [TODO](./doc/TODO.md)
+### Packer:
+
+```lua
+use({
+  'miksuh-dev/kanban.nvim',
+  cmd = { 'Kanban' },
+  requires = { 'MunifTanjim/nui.nvim' },
+})
+```
